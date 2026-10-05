@@ -17,7 +17,9 @@
 
 ## 快速开始
 
-需要 Python 3.8+，纯标准库，无第三方依赖。
+**网页版（推荐，零安装）**：直接双击打开 `web/公司风险信号灯评估.html`，浏览器即可使用——录入指标 → 一键评估 → 输出风险等级。
+
+**命令行版**：需要 Python 3.8+，纯标准库，无第三方依赖。
 
 ```bash
 # 用示例数据评估
@@ -31,11 +33,14 @@ python src/cli.py data/sample_company.json
 ```
 ├── README.md
 ├── docs/framework.md        # 框架完整文档
+├── web/
+│   └── 公司风险信号灯评估.html # 网页版评估工具（单文件，浏览器直接打开）
 ├── src/
 │   ├── score_engine.py      # 评分引擎（核心判定逻辑）
 │   └── cli.py               # 命令行入口
 ├── data/
-│   └── sample_company.json  # 示例公司数据
+│   ├── sample_company.json  # 示例数据（正常公司）
+│   └── risky_company.json   # 示例数据（风险公司）
 ├── tests/
 │   └── test_score_engine.py # 单元测试
 └── LICENSE

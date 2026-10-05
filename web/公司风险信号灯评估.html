@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>公司风险信号灯评估</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231A2B4A'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%23C0392B'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --navy: #1A2B4A;
+    --navy-2: #758092;
+    --line: #DEE3E8;
+    --bg: #F7F9FB;
+    --ink: #1F2329;
+    --sub: #646A73;
+    --red: #C0392B;    --red-bg: #FDF0EF;    --red-line: #E3B7B0;
+    --yellow: #B7950B; --yellow-bg: #FDF8EA; --yellow-line: #E0CE96;
+    --green: #2E7D32;  --green-bg: #F0F7F1;  --green-line: #B7D5BB;
+    --blue: #1F618D;   --blue-bg: #EEF4F9;   --blue-line: #B9CFE0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Noto Sans SC", "Microsoft YaHei", "PingFang SC", sans-serif;
+    background: var(--bg); color: var(--ink); line-height: 1.6;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 20px 16px 48px; }
+
+  header { border-bottom: 2px solid var(--navy); padding-bottom: 14px; margin-bottom: 18px; }
+  header h1 { font-size: 24px; color: var(--navy); letter-spacing: 1px; }
+  header p  { font-size: 13px; color: var(--sub); margin-top: 4px; }
+  header .badge { display:inline-block; font-size: 12px; color: #fff; background: var(--navy); border-radius: 4px; padding: 2px 8px; margin-right: 8px; vertical-align: 3px; }
+
+  .panel { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 16px; margin-bottom: 14px; }
+
+  .company-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end; }
+  .company-row label { font-size: 13px; color: var(--sub); display: block; margin-bottom: 4px; }
+  .company-row input {
+    border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; font-size: 14px;
+    width: 100%; background: #fff; color: var(--ink);
+  }
+  .company-row .fld { flex: 1; min-width: 220px; }
+
+  .group { border-radius: 8px; padding: 12px 14px; margin-bottom: 12px; }
+  .group .g-title { font-size: 15px; font-weight: 700; margin-bottom: 2px; }
+  .group .g-sub  { font-size: 12px; color: var(--sub); margin-bottom: 8px; }
+  .group.l1 { background: var(--red-bg);  border: 1px solid var(--red-line); }
+  .group.l2 { background: var(--yellow-bg); border: 1px solid var(--yellow-line); }
+  .group.l3 { background: var(--yellow-bg); border: 1px solid var(--yellow-line); }
+  .group.l4 { background: var(--blue-bg);  border: 1px solid var(--blue-line); }
+  .group.l1 .g-title { color: var(--red); }
+  .group.l2 .g-title, .group.l3 .g-title { color: var(--yellow); }
+  .group.l4 .g-title { color: var(--blue); }
+
+  .item {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 10px;
+    background: #fff; border: 1px solid var(--line); border-radius: 6px;
+    padding: 8px 10px; margin-bottom: 6px;
+  }
+  .item .txt { flex: 1; min-width: 0; }
+  .item .nm { font-size: 14px; font-weight: 600; }
+  .item .hint { font-size: 12px; color: var(--sub); }
+
+  /* 开关 */
+  .switch { position: relative; width: 46px; height: 24px; flex: none; margin-top: 2px; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .switch .slider {
+    position: absolute; inset: 0; background: #C9CDD4; border-radius: 12px; cursor: pointer; transition: background .15s;
+  }
+  .switch .slider::before {
+    content: ""; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px;
+    background: #fff; border-radius: 50%; transition: transform .15s;
+  }
+  .switch input:checked + .slider { background: var(--navy); }
+  .switch input:checked + .slider::before { transform: translateX(22px); }
+
+  /* 0/1/2 选择 */
+  .seg { display: flex; gap: 4px; flex: none; }
+  .seg button {
+    border: 1px solid var(--line); background: #fff; color: var(--sub);
+    font-size: 13px; border-radius: 6px; padding: 4px 10px; cursor: pointer;
+  }
+  .seg button.on-0 { background: var(--green-bg); color: var(--green); border-color: var(--green-line); font-weight: 600; }
+  .seg button.on-1 { background: var(--yellow-bg); color: var(--yellow); border-color: var(--yellow-line); font-weight: 600; }
+  .seg button.on-2 { background: var(--red-bg);   color: var(--red);   border-color: var(--red-line);   font-weight: 600; }
+
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn {
+    border: 0; border-radius: 8px; padding: 11px 22px; font-size: 15px; font-weight: 600; cursor: pointer;
+  }
+  .btn.primary { background: var(--navy); color: #fff; }
+  .btn.ghost   { background: #fff; color: var(--navy); border: 1px solid var(--navy); }
+
+  /* 结果 */
+  .result { display: none; }
+  .result.show { display: block; }
+  .level {
+    display: flex; align-items: center; gap: 14px; border-radius: 10px;
+    padding: 18px; margin-bottom: 12px;
+  }
+  .level .ring { font-size: 40px; font-weight: 800; color: #fff; border-radius: 50%; width: 84px; height: 84px; display: flex; align-items: center; justify-content: center; flex: none; }
+  .level .info { flex: 1; }
+  .level .info .lv { font-size: 20px; font-weight: 800; }
+  .level .info .adv { font-size: 13px; color: var(--ink); }
+  .level.green  { background: var(--green-bg);  border: 1px solid var(--green-line);  }
+  .level.yellow { background: var(--yellow-bg); border: 1px solid var(--yellow-line); }
+  .level.red    { background: var(--red-bg);    border: 1px solid var(--red-line);    }
+  .level.green .ring  { background: var(--green); }
+  .level.yellow .ring { background: var(--yellow); }
+  .level.red .ring    { background: var(--red); }
+
+  .detail { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 640px) { .detail { grid-template-columns: 1fr; } }
+  .card { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: #fff; }
+  .card h4 { font-size: 13px; color: var(--sub); margin-bottom: 6px; }
+  .card ul { list-style: none; }
+  .card li { font-size: 13px; padding: 2px 0; }
+  .card li::before { content: "·"; margin-right: 6px; color: var(--navy-2); }
+  .card .score { font-size: 18px; font-weight: 700; color: var(--navy); }
+
+  footer { margin-top: 20px; font-size: 12px; color: var(--sub); border-top: 1px solid var(--line); padding-top: 10px; }
+  footer a { color: var(--navy); }
+  .empty { text-align: center; color: var(--sub); padding: 24px 0; font-size: 14px; }
+  .tag { font-size: 11px; border-radius: 4px; padding: 1px 6px; margin-left: 6px; color: #fff; }
+  .tag.t-hit { background: var(--red); }
+  .tag.t-l4  { background: var(--blue); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1><span class="badge">员工预估公司风险</span>公司风险信号灯评估</h1>
+    <p>四层信号灯：红灯一票否决 · 黄灯按行业校准累计 · 员工内部信号优先。覆盖财务、信用、风险、口碑四维 16 项检查点。</p>
+  </header>
+
+  <div class="panel">
+    <div class="company-row">
+      <div class="fld"><label>公司名称</label><input id="company" type="text" placeholder="例如：示例科技有限公司"></div>
+      <div class="fld"><label>评估日期</label><input id="date" type="date"></div>
+      <div class="fld"><label>公司类型</label>
+        <input id="listing" type="text" placeholder="上市公司 / 非上市 / 不确定">
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== L1 红灯 ===== -->
+  <div class="group l1">
+    <div class="g-title">L1 红灯 · 一票否决（任一命中 = 高危）</div>
+    <div class="g-sub">对应检查点：审计意见(4)、征信司法(5)。命中任意一项直接判红，不参与后续计分。</div>
+    <div class="item"><div class="txt"><div class="nm">非标审计意见</div><div class="hint">年报出现保留 / 无法表示 / 否定意见（第 4 点）</div></div><label class="switch"><input type="checkbox" data-group="l1" data-id="audit"><span class="slider"></span></label></div>
+    <div class="item"><div class="txt"><div class="nm">失信被执行 / 限制消费</div><div class="hint">中国执行信息公开网可查（第 5 点）</div></div><label class="switch"><input type="checkbox" data-group="l1" data-id="dishonest"><span class="slider"></span></label></div>
+    <div class="item"><div class="txt"><div class="nm">监管立案调查</div><div class="hint">证监会 / 交易所立案公告（区别于一般处罚）</div></div><label class="switch"><input type="checkbox" data-group="l1" data-id="investigation"><span class="slider"></span></label></div>
+    <div class="item"><div class="txt"><div class="nm">资不抵债</div><div class="hint">负债总额超过资产总额，连续两期</div></div><label class="switch"><input type="checkbox" data-group="l1" data-id="insolvency"><span class="slider"></span></label></div>
+    <div class="item"><div class="txt"><div class="nm">存贷双高</div><div class="hint">货币资金高 + 有息负债高 + 利息收入不匹配（康美/康得新爆雷特征）</div></div><label class="switch"><input type="checkbox" data-group="l1" data-id="deposit_debt"><span class="slider"></span></label></div>
+  </div>
+
+  <!-- ===== L2 量化 ===== -->
+  <div class="group l2">
+    <div class="g-title">L2 黄灯 · 量化评分（0=正常 1=关注 2=恶化，按行业对比）</div>
+    <div class="g-sub">对应检查点：现金流(1)、负债偿债(2)、收入利润匹配(3)、账期(6)。</div>
+    <div class="item"><div class="txt"><div class="nm">现金流质量</div><div class="hint">经营现金流长期为负、利润高但现金流低（第 1 点）</div></div><div class="seg" data-group="l2" data-id="cashflow"><button data-v="0">正常</button><button data-v="1">关注</button><button data-v="2">恶化</button></div></div>
+    <div class="item"><div class="txt"><div class="nm">偿债能力</div><div class="hint">负债率超 70%、流动比率 &lt;1、速动 &lt;0.5（第 2 点，非金融行业参考）</div></div><div class="seg" data-group="l2" data-id="solvency"><button data-v="0">正常</button><button data-v="1">关注</button><button data-v="2">恶化</button></div></div>
+    <div class="item"><div class="txt"><div class="nm">盈利质量</div><div class="hint">收入涨利润不涨、利润涨税交得少（第 3 点）</div></div><div class="seg" data-group="l2" data-id="earnings"><button data-v="0">正常</button><button data-v="1">关注</button><button data-v="2">恶化</button></div></div>
+    <div class="item"><div class="txt"><div class="nm">应收应付账期</div><div class="hint">应付账期突然拉长 / 应收账期突然拉长（第 6 点）</div></div><div class="seg" data-group="l2" data-id="receivables"><button data-v="0">正常</button><button data-v="1">关注</button><button data-v="2">恶化</button></div></div>
+  </div>
+
+  <!-- ===== L3 定性 ===== -->
+  <div class="group l3">
+    <div class="g-title">L3 黄灯 · 定性信号（命中即计 1 分）</div>
+    <div class="g-sub">对应检查点：质押减持(7)、关联交易(8)、表外(11)、管理层(12)、行业政策(9)、集中度(10)、媒体监管(15)、同行对比(16)。</div>
+    <div class="item"><div class="txt"><div class="nm">股权质押与减持</div><div class="hint">大股东高比例质押、高管密集减持（第 7 点）</div></div><label class="switch"><input type="checkbox" data-group="l3" data-id="pledge"><span class="slider"></span></label></div>
+    <div class="item"><div class="txt"><div class="nm">关联交易异常</div><div class="hint">大量关联交易、价格不公允（第 8 点）</div></div><label class="switch"><input type="checkbox" data-group="l3" data-id="related"><span class="slider"></span></label></div>
+    <div class="item"><div class="txt"><div class="nm">表外风险</div><div class="hint">对外担保、未决诉讼、回购承诺、租赁负债（第 11 点）</div></div><label class="switch"><input type="checkbox" data-group="l3" data-id="offsheet"><span class="slider"></span></label></div>
+    <div class="item"><div class="txt"><div class="nm">高息 / 非标融资</div><div class="hint">信托、租赁、发债利率异常高</div></div><label class="switch"><input type="checkbox" data-group="l3" data-id="highrate"><span class="slider"></span></label></div>
+    <div class="item"><div class="txt"><div class="nm">管理层风险</div><div class="hint">频繁换财务总监/审计师、老板一言堂（第 12 点）</div></div><label class="switch"><input type="checkbox" data-group="l3" data-id="management"><span class="slider"></span></label></div>
+    <div class="item"><div class="txt"><div class="nm">行业与政策风险</div><div class="hint">高度依赖补贴/牌照/单一政策、行业下行期（第 9 点）</div></div><label class="switch"><input type="checkbox" data-group="l3" data-id="industry"><span class="slider"></span></label></div>
+    <div class="item"><div class="txt"><div class="nm">客户 / 供应商集中度</div><div class="hint">前五大客户占收入 50% 以上 / 前五大供应商占采购 50% 以上（第 10 点）</div></div><label class="switch"><input type="checkbox" data-group="l3" data-id="concentration"><span class="slider"></span></label></div>
+    <div class="item"><div class="txt"><div class="nm">监管处罚 / 问询函</div><div class="hint">被处罚、问询函频繁（第 15 点）</div></div><label class="switch"><input type="checkbox" data-group="l3" data-id="penalty"><span class="slider"></span></label></div>
+    <div class="item"><div class="txt"><div class="nm">同行对比恶化</div><div class="hint">同行增长它下滑、同行盈利它亏损（第 16 点）</div></div><label class="switch"><input type="checkbox" data-group="l3" data-id="peer"><span class="slider"></span></label></div>
+  </div>
+
+  <!-- ===== L4 人工 ===== -->
+  <div class="group l4">
+    <div class="g-title">L4 人工 · 员工与口碑观察（命中计分；标"强"的为强信号）</div>
+    <div class="g-sub">对应检查点：员工评价(13)、客户供应商评价(14)、媒体监管(15)。内部信号只能人工采集，优先级最高。</div>
+    <div class="item"><div class="txt"><div class="nm">欠薪 / 工资延迟 <span class="tag t-l4">强</span></div><div class="hint">工资延迟、分批发放（第 13 点）</div></div><label class="switch"><input type="checkbox" data-group="l4" data-id="salary"><span class="slider"></span></label></div>
+    <div class="item"><div class="txt"><div class="nm">社保公积金欠缴 <span class="tag t-l4">强</span></div><div class="hint">个人账户可查是否足额按时缴纳</div></div><label class="switch"><input type="checkbox" data-group="l4" data-id="social"><span class="slider"></span></label></div>
+    <div class="item"><div class="txt"><div class="nm">裁员不赔偿 / 核心流失 <span class="tag t-l4">强</span></div><div class="hint">裁员不赔偿、核心团队大量流失（第 13 点）</div></div><label class="switch"><input type="checkbox" data-group="l4" data-id="layoff"><span class="slider"></span></label></div>
+    <div class="item"><div class="txt"><div class="nm">招聘冻结 / 办公收缩</div><div class="hint">HC 缩减、换小办公室、撤点搬迁</div></div><label class="switch"><input type="checkbox" data-group="l4" data-id="shrink"><span class="slider"></span></label></div>
+    <div class="item"><div class="txt"><div class="nm">客户 / 供应商口碑差</div><div class="hint">投诉集中、供应商不愿供货、现款现货（第 14 点）</div></div><label class="switch"><input type="checkbox" data-group="l4" data-id="feedback"><span class="slider"></span></label></div>
+    <div class="item"><div class="txt"><div class="nm">负面舆情集中</div><div class="hint">负面新闻集中且公司回避（第 15 点）</div></div><label class="switch"><input type="checkbox" data-group="l4" data-id="media"><span class="slider"></span></label></div>
+  </div>
+
+  <div class="actions">
+    <button class="btn primary" id="runBtn">开始评估</button>
+    <button class="btn ghost" id="demoBtn">填入正常示例</button>
+    <button class="btn ghost" id="demoRiskBtn">填入风险示例</button>
+  </div>
+
+  <div class="panel result" id="result">
+    <!-- 评估结果由 JS 填充 -->
+  </div>
+
+  <footer>
+    数据口径：公开数据来源为巨潮资讯、交易所、中国执行信息公开网、信用中国、国家企业信用信息公示系统等官方合规源；
+    内部信号（工资/社保/裁员/口碑）需人工采集。评估结果仅供参考，不构成投资或就业建议。框架详见
+    <a href="https://feishu.doubao.com/docx/U5jSdYlnMoFPUdxyZPAcD40Ynic">飞书框架文档</a>。
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var LABELS = {
+    l1: {
+      audit: "非标审计意见", dishonest: "失信被执行/限高", investigation: "监管立案调查",
+      insolvency: "资不抵债", deposit_debt: "存贷双高"
+    },
+    l2: {
+      cashflow: "现金流质量", solvency: "偿债能力", earnings: "盈利质量", receivables: "应收应付账期"
+    },
+    l3: {
+      pledge: "股权质押与减持", related: "关联交易异常", offsheet: "表外风险", highrate: "高息/非标融资",
+      management: "管理层风险", industry: "行业与政策风险", concentration: "客户/供应商集中度",
+      penalty: "监管处罚/问询函", peer: "同行对比恶化"
+    },
+    l4: {
+      salary: "欠薪/工资延迟", social: "社保公积金欠缴", layoff: "裁员不赔偿/核心流失",
+      shrink: "招聘冻结/办公收缩", feedback: "客户/供应商口碑差", media: "负面舆情集中"
+    }
+  };
+  var L4_STRONG = { salary: true, social: true, layoff: true };
+
+  function collect() {
+    var data = { l1: {}, l2: {}, l3: {}, l4: {} };
+    var i, cb, seg, group, id;
+    var boxes = document.querySelectorAll('input[type="checkbox"][data-group]');
+    for (i = 0; i < boxes.length; i++) {
+      cb = boxes[i];
+      group = cb.getAttribute("data-group");
+      id = cb.getAttribute("data-id");
+      data[group][id] = cb.checked ? 1 : 0;
+    }
+    var segs = document.querySelectorAll(".seg[data-group]");
+    for (i = 0; i < segs.length; i++) {
+      seg = segs[i];
+      group = seg.getAttribute("data-group");
+      id = seg.getAttribute("data-id");
+      data[group][id] = parseInt(seg.getAttribute("data-value") || "0", 10);
+    }
+    return data;
+  }
+
+  function evaluate(data) {
+    var l1Hits = [], l3Hits = [], l4Hits = [];
+    var l2Score = 0, l2Detail = [], l3Score = 0, l4Score = 0;
+    var key;
+
+    for (key in data.l1) {
+      if (data.l1[key]) l1Hits.push(LABELS.l1[key]);
+    }
+    for (key in data.l2) {
+      var v2 = data.l2[key];
+      l2Score += v2;
+      if (v2 > 0) l2Detail.push(LABELS.l2[key] + "(" + v2 + ")");
+    }
+    for (key in data.l3) {
+      if (data.l3[key]) { l3Score += 1; l3Hits.push(LABELS.l3[key]); }
+    }
+    var strongHits = [];
+    for (key in data.l4) {
+      if (data.l4[key]) {
+        l4Hits.push(LABELS.l4[key]);
+        l4Score += L4_STRONG[key] ? 2 : 1;
+        if (L4_STRONG[key]) strongHits.push(LABELS.l4[key]);
+      }
+    }
+
+    var level;
+    if (l1Hits.length > 0) {
+      level = "red";
+    } else if (strongHits.length >= 2) {
+      level = "red";
+    } else {
+      var y = l2Score + l3Score;
+      if (y >= 6) level = "red";
+      else if (y >= 3) level = "yellow";
+      else level = "green";
+      if (strongHits.length === 1 && level === "green") level = "yellow";
+    }
+
+    return {
+      level: level,
+      l1Hits: l1Hits,
+      l2Score: l2Score, l2Detail: l2Detail,
+      l3Score: l3Score, l3Hits: l3Hits,
+      l4Score: l4Score, l4Hits: l4Hits,
+      strongHits: strongHits
+    };
+  }
+
+  var META = {
+    green:  { label: "绿 · 风险较低", cls: "green",  ring: "绿",
+             advice: "财务与治理信号正常，可正常入职或继续在职观察。" },
+    yellow: { label: "黄 · 需要警惕", cls: "yellow", ring: "黄",
+             advice: "存在值得跟踪的风险点：保持警惕，按季度复查工资发放节奏、社保到账与公开数据变化。" },
+    red:    { label: "红 · 高危",     cls: "red",    ring: "红",
+             advice: "存在致命风险或资金链断裂迹象：入职前应慎重考虑；在职中尽快准备替代方案，保留工资条、劳动合同、社保记录等证据。" }
+  };
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined && text !== null) n.textContent = text;
+    return n;
+  }
+
+  function render(data) {
+    var box = document.getElementById("result");
+    var res = evaluate(data);
+    var meta = META[res.level];
+    var company = document.getElementById("company").value.trim() || "未填写公司名";
+
+    box.innerHTML = "";
+    box.classList.add("show");
+
+    var level = el("div", "level " + meta.cls);
+    level.appendChild(el("div", "ring", meta.ring));
+    var info = el("div", "info");
+    info.appendChild(el("div", "lv", company + " · " + meta.label));
+    info.appendChild(el("div", "adv", meta.advice));
+    level.appendChild(info);
+    box.appendChild(level);
+
+    var detail = el("div", "detail");
+
+    var c1 = el("div", "card");
+    c1.appendChild(el("h4", null, "L1 红灯（一票否决）"));
+    var u1 = el("ul");
+    if (res.l1Hits.length === 0) u1.appendChild(el("li", null, "未命中"));
+    res.l1Hits.forEach(function (t) { u1.appendChild(el("li", null, t)); });
+    c1.appendChild(u1);
+    detail.appendChild(c1);
+
+    var c2 = el("div", "card");
+    c2.appendChild(el("h4", null, "L2 量化计分"));
+    var s2 = el("div", "score", res.l2Score + " 分");
+    c2.appendChild(s2);
+    var u2 = el("ul");
+    if (res.l2Detail.length === 0) u2.appendChild(el("li", null, "全部正常"));
+    res.l2Detail.forEach(function (t) { u2.appendChild(el("li", null, t)); });
+    c2.appendChild(u2);
+    detail.appendChild(c2);
+
+    var c3 = el("div", "card");
+    c3.appendChild(el("h4", null, "L3 定性信号"));
+    var s3 = el("div", "score", res.l3Score + " 分");
+    c3.appendChild(s3);
+    var u3 = el("ul");
+    if (res.l3Hits.length === 0) u3.appendChild(el("li", null, "未命中"));
+    res.l3Hits.forEach(function (t) { u3.appendChild(el("li", null, t)); });
+    c3.appendChild(u3);
+    detail.appendChild(c3);
+
+    var c4 = el("div", "card");
+    c4.appendChild(el("h4", null, "L4 人工信号"));
+    var s4 = el("div", "score", res.l4Score + " 分");
+    c4.appendChild(s4);
+    var u4 = el("ul");
+    if (res.l4Hits.length === 0) u4.appendChild(el("li", null, "未命中"));
+    res.l4Hits.forEach(function (t) {
+      var li = el("li");
+      li.textContent = t;
+      if (res.strongHits.indexOf(t) >= 0) li.appendChild(el("span", "tag t-l4", "强"));
+      u4.appendChild(li);
+    });
+    c4.appendChild(u4);
+    detail.appendChild(c4);
+
+    box.appendChild(detail);
+  }
+
+  function setSeg(group, id, v) {
+    var seg = document.querySelector('.seg[data-group="' + group + '"][data-id="' + id + '"]');
+    if (!seg) return;
+    seg.setAttribute("data-value", String(v));
+    var btns = seg.querySelectorAll("button");
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].className = (parseInt(btns[i].getAttribute("data-v"), 10) === v) ? "on-" + v : "";
+    }
+  }
+
+  function setCheck(group, id, on) {
+    var cb = document.querySelector('input[type="checkbox"][data-group="' + group + '"][data-id="' + id + '"]');
+    if (cb) cb.checked = !!on;
+  }
+
+  function fillDemo(risk) {
+    setCheck("l1", "audit", risk);       setCheck("l1", "dishonest", risk);
+    setCheck("l1", "investigation", false); setCheck("l1", "insolvency", false);
+    setCheck("l1", "deposit_debt", risk);
+
+    setSeg("l2", "cashflow", risk ? 2 : 0);
+    setSeg("l2", "solvency", risk ? 2 : 0);
+    setSeg("l2", "earnings", risk ? 1 : 0);
+    setSeg("l2", "receivables", risk ? 2 : 0);
+
+    setCheck("l3", "pledge", risk);   setCheck("l3", "related", risk);
+    setCheck("l3", "offsheet", risk); setCheck("l3", "highrate", risk);
+    setCheck("l3", "management", risk); setCheck("l3", "industry", false);
+    setCheck("l3", "concentration", false); setCheck("l3", "penalty", false);
+    setCheck("l3", "peer", false);
+
+    setCheck("l4", "salary", risk);  setCheck("l4", "social", risk);
+    setCheck("l4", "layoff", false); setCheck("l4", "shrink", risk);
+    setCheck("l4", "feedback", false); setCheck("l4", "media", false);
+
+    document.getElementById("company").value = risk ? "示例风险公司" : "示例正常公司";
+  }
+
+  // seg 按钮点击
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest ? e.target.closest(".seg button") : null;
+    if (!btn) return;
+    var seg = btn.parentNode;
+    var v = parseInt(btn.getAttribute("data-v"), 10);
+    seg.setAttribute("data-value", String(v));
+    var btns = seg.querySelectorAll("button");
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].className = (parseInt(btns[i].getAttribute("data-v"), 10) === v) ? "on-" + v : "";
+    }
+  });
+
+  document.getElementById("runBtn").addEventListener("click", function () { render(collect()); });
+  document.getElementById("demoBtn").addEventListener("click", function () { fillDemo(false); });
+  document.getElementById("demoRiskBtn").addEventListener("click", function () { fillDemo(true); });
+
+  // 默认评估日期
+  var d = new Date();
+  document.getElementById("date").value = d.getFullYear() + "-" +
+    ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
+})();
+</script>
+</body>
+</html>
