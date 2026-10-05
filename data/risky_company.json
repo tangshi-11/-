@@ -1,0 +1,32 @@
+{
+  "company": "示例地产（风险公司）",
+  "evaluated_at": "2026-10-05",
+  "l1": {
+    "audit_opinion": true,
+    "dishonest": false,
+    "regulatory_investigation": false,
+    "insolvency": false,
+    "high_deposit_high_debt": true
+  },
+  "l2": {
+    "cashflow_quality": 2,
+    "solvency": 2,
+    "earnings_quality": 1,
+    "receivables_inventory": 2
+  },
+  "l3": {
+    "pledge_reduction": 1,
+    "related_party": 1,
+    "penalty_inquiry": 0,
+    "key_personnel": 1,
+    "external_guarantee": 1,
+    "high_interest_financing": 1
+  },
+  "l4": {
+    "salary_delay": 1,
+    "social_security_arrears": 1,
+    "layoff_compensation": 0,
+    "hiring_freeze": 1,
+    "office_shrink": 1
+  }
+}

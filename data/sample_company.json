@@ -1,0 +1,32 @@
+{
+  "company": "示例科技（正常公司）",
+  "evaluated_at": "2026-10-05",
+  "l1": {
+    "audit_opinion": false,
+    "dishonest": false,
+    "regulatory_investigation": false,
+    "insolvency": false,
+    "high_deposit_high_debt": false
+  },
+  "l2": {
+    "cashflow_quality": 0,
+    "solvency": 0,
+    "earnings_quality": 0,
+    "receivables_inventory": 0
+  },
+  "l3": {
+    "pledge_reduction": 0,
+    "related_party": 0,
+    "penalty_inquiry": 0,
+    "key_personnel": 0,
+    "external_guarantee": 0,
+    "high_interest_financing": 0
+  },
+  "l4": {
+    "salary_delay": 0,
+    "social_security_arrears": 0,
+    "layoff_compensation": 0,
+    "hiring_freeze": 0,
+    "office_shrink": 0
+  }
+}
